@@ -26,16 +26,23 @@ app.get("/players", async (_, res) => {
   res.json(rows)
 })
 
-app.post("/players", async (req, res) => {
+app.post("/games", async (req, res) => {
   const { name } = req.body
 
+  if (!name) {
+    return res.status(400).send("Game name required")
+  }
+
   const { rows } = await pool.query(
-    "INSERT INTO players(name) VALUES($1) RETURNING *",
+    `INSERT INTO games (name)
+     VALUES ($1)
+     RETURNING *`,
     [name]
   )
 
   res.json(rows[0])
 })
+
 
 app.post("/score", async (req, res) => {
   const { id, delta } = req.body
@@ -51,6 +58,8 @@ app.post("/score", async (req, res) => {
   res.json(rows[0])
 })
 
-app.listen(3000, () =>
-  console.log("Server running on port 3000")
-)
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
+

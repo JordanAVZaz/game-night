@@ -15,7 +15,7 @@ type Player = {
   score: number
 }
 
-export const API = "http://localhost:3000"
+export const API = "https://game-night-r1oe.onrender.com"
 
 export default function App() {
   const [players, setPlayers] = useState<Player[]>([])
