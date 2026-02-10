@@ -20,9 +20,25 @@ const pool = new Pool({
 })
 
 app.get("/players", async (_, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM players ORDER BY score DESC"
-  )
+  const { rows } = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      COALESCE(SUM(
+        CASE sr.placement
+          WHEN 1 THEN 3
+          WHEN 2 THEN 2
+          WHEN 3 THEN 1
+          ELSE 0
+        END
+      ),0) as score
+    FROM players p
+    LEFT JOIN session_results sr
+      ON p.id = sr.player_id
+    GROUP BY p.id
+    ORDER BY score DESC;
+  `)
+
   res.json(rows)
 })
 
