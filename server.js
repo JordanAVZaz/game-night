@@ -82,6 +82,55 @@ app.post("/score", async (req, res) => {
   res.json(rows[0])
 })
 
+app.post("/session", async (req, res) => {
+  const client = await pool.connect()
+
+  try {
+    const { gameId, results } = req.body
+
+    if (!gameId || !results || results.length !== 4) {
+      return res.status(400).send("Invalid session payload")
+    }
+
+    await client.query("BEGIN")
+
+    // Create session
+    const sessionInsert = await client.query(
+      `INSERT INTO sessions (game_id)
+       VALUES ($1)
+       RETURNING id`,
+      [gameId]
+    )
+
+    const sessionId = sessionInsert.rows[0].id
+
+    // Insert placements
+    for (const r of results) {
+      await client.query(
+        `INSERT INTO session_results
+         (session_id, player_id, placement)
+         VALUES ($1, $2, $3)`,
+        [sessionId, r.playerId, r.placement]
+      )
+    }
+
+    await client.query("COMMIT")
+
+    res.sendStatus(200)
+
+  } catch (err) {
+
+    await client.query("ROLLBACK")
+    console.error("SESSION ERROR:", err)
+
+    res.status(500).send("Failed to create session")
+
+  } finally {
+    client.release()
+  }
+})
+
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
