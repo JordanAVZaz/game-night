@@ -130,6 +130,22 @@ app.post("/session", async (req, res) => {
   }
 })
 
+app.get("/session/:id", async (req, res) => {
+
+  const { id } = req.params
+
+  const { rows } = await pool.query(`
+    SELECT 
+      sr.player_id,
+      sr.placement
+    FROM session_results sr
+    WHERE sr.session_id = $1
+  `, [id])
+
+  res.json(rows)
+
+})
+
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
