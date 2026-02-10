@@ -43,6 +43,14 @@ app.post("/games", async (req, res) => {
   res.json(rows[0])
 })
 
+app.get("/games", async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM games ORDER BY name"
+  )
+  res.json(rows)
+})
+
+
 
 app.post("/score", async (req, res) => {
   const { id, delta } = req.body
